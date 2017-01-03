@@ -1,0 +1,59 @@
+attach(my_dataset)
+
+# Randomly partition into training and test data
+index <- sample(1:length_dataset,size_of_trainingset, replace =FALSE)
+training_set <- data.frame(my_dataset[index,])
+test_set <- data.frame(my_dataset[-index,])
+
+# Set input and outcome variables and run algorithm
+rfout1 <- randomForest(as.factor(outcome_variable)~input_var1 + input_var2 + etc, data=my_dataset, ntree=15000, importance=TRUE, nodesize=1)
+
+
+predstest<-predict(rfout1, test_set, type="response")
+table(observed=test_set$outcome_variable, predicted=predstest)
+
+partialPlot(rfout1, pred.data=training_set, input_variable, which.class="TRUE", rug=T, main = "Insert graph title", xlab = "", ylab = "Logits")
+
+
+
+varImpPlot(rfout1, scale=F, type=1, class="TRUE", main = "Variable Importance Plot for Launched Outcome")
+varImpPlot(rfout1, scale=F, type=1, class="FALSE", main = "Variable Importance Plot for Discontinued Outcome")
+
+
+
+#Now GBM
+
+# Set numeric outcome variable
+test_set$outcome_numeric <- as.numeric(RAll3test$outcome_variable)
+RAll3train$outcome_numeric <- as.numeric(RAll3train$outcome_variable)
+
+
+gbmout<-gbm(outcome_numeric ~ as.factor(binary_input_variables) + numeric_input_variables, data=my_dataset, n.trees=25000, cv.folds=5, interaction.depth=3, distribution="bernoulli", shrinkage=.0001, n.minobsinnode=5, bag.fraction=0.5)
+
+# Visualise how many iterations is best used to minimise predictive error. Currently 5x cross-validation is used to find this
+best.iter<-gbm.perf(gbmout, method="cv")
+
+test_set$gbmpred<-predict.gbm(gbmout,test_set,type="response")
+summary(test_set$gbmpred)
+# Can change classification threshold below
+table(observed=test_set$Launched,predicted=test_set$gbmpred>0.3019)
+
+
+
+# Now GAM
+
+gamout<-gam(outcome_numeric ~ as.factor(binary_input_variables) + s(numeric_input_variables), family = "binomial", data=my_dataset)
+
+test_set$gampreds<-predict.gam(gamout, test_set, type="response")
+
+
+# Need to set threshold for classification, but to do this need to first convert GAM output from logits to probabilities
+
+test_set$gamprobs<-exp(test_set$gampreds)/(1+exp(test_set$gampreds))
+summary(test_set$gamprobs)
+table(observed=test_set$outcome_variable, predicted=test_set$gamprobs>0.5866)
+
+
+
+
+

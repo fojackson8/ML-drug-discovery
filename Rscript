@@ -1,5 +1,9 @@
 attach(my_dataset)
 
+
+length_dataset = length(my_dataset)
+size_of_trainingset = 100
+
 # Randomly partition into training and test data
 index <- sample(1:length_dataset,size_of_trainingset, replace =FALSE)
 training_set <- data.frame(my_dataset[index,])

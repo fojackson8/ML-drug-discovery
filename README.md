@@ -10,7 +10,7 @@ This tuning is an empirical process, and although it's slightly more complicated
 for all tuning parameters can be found in the two references provided.
 
 This script first randomly partitions the data into training and test sets. It then runs the analysis and returns confusion 
-tables for each analysis, which give the number of true positives, false positives and false negatives. 
+tables for each analysis, which give the number of true positives, false positives and false negatives. Kappa is also calculated. 
 
 The Random Forests package is first used to generate variable importance and partial dependency plots. Variable importance 
 plots show the relative importance of each variable in predicting the outcome (%increase in predictive error if variable was 
@@ -20,10 +20,9 @@ The GBM package does not contain similar variable-specific metrics. This script 
 benchmarking of the gradient boosting method: the command 'best.iter' allows you to visualise how predictive error decreases
 with number of iterations.
 
-Finally, to compare classical regression against machine learning methods, this script contains a temple for running a 
+Finally, to compare classical regression against machine learning methods, this script contains a template for running a 
 generalised additive model of regression on an example dataset. Suitable tuning parameters are selected, and smoothers are 
 placed on all numerical variables. Again, a confusion table is generated to allow comparison of false positives and negatives.
 
 I found for my analysis that Random Forests achieved the most stable and accurate prediction of my outcome variable. However 
-this will vary, and will likely depend on factors such as depth vs. breadth of dataset. The confusion tables generated provide
-a simple and clear way to compare the perfomance of each classification algorithm. 
+this will vary, and will likely depend on factors such as depth vs. breadth of dataset. The confusion tables generated provide a simple and clear way to compare the perfomance of each classification algorithm, whilst the kappa statistic takes into account any sampling biases in your data.

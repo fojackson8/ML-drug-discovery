@@ -14,12 +14,22 @@ rfout1 <- randomForest(as.factor(outcome_variable)~input_var1 + input_var2 + etc
 
 
 predstest<-predict(rfout1, test_set, type="response")
-table(observed=test_set$outcome_variable, predicted=predstest)
+confusionRF = table(observed=test_set$outcome_variable, predicted=predstest)
 
+# Calculate kappaRF = (observed accuracy - expected accuracy)/(1-expected accuracy) 
+expected_accuracy_F= confusionRF[,1]*confusionRF[1,]/sum(confusionRF)
+expected_accuracy_T = confusionRF[,2]*confusionRF[2,]/sum(confusionRF)
+expected_accuracy = (expected_accuracy_F + expected_accuracy_T)/sum(confusionRF)
+observed_accuracy = (confusionRF[1,1]+confusionRF[2,2])/sum(confusionRF)
+
+kappaRF  = (observed_accuracy- expected_accuracy)/(1-expected_accuracy)
+
+
+# Partial dependency plots
 partialPlot(rfout1, pred.data=training_set, input_variable, which.class="TRUE", rug=T, main = "Insert graph title", xlab = "", ylab = "Logits")
 
 
-
+# Variable importance plots
 varImpPlot(rfout1, scale=F, type=1, class="TRUE", main = "Variable Importance Plot for Launched Outcome")
 varImpPlot(rfout1, scale=F, type=1, class="FALSE", main = "Variable Importance Plot for Discontinued Outcome")
 
@@ -40,7 +50,18 @@ best.iter<-gbm.perf(gbmout, method="cv")
 test_set$gbmpred<-predict.gbm(gbmout,test_set,type="response")
 summary(test_set$gbmpred)
 # Can change classification threshold below
-table(observed=test_set$Launched,predicted=test_set$gbmpred>0.3019)
+confusionGBM = table(observed=test_set$Launched,predicted=test_set$gbmpred>0.3019)
+
+
+
+#Calculate kappaGBM = (observed accuracy - expected accuracy)/(1-expected accuracy) 
+
+expected_accuracy_F= confusionGBM[,1]*confusionGBM[1,]/sum(confusionGBM)
+expected_accuracy_T = confusionGBM[,2]*confusionGBM[2,]/sum(confusionGBM)
+expected_accuracy = (expected_accuracy_F + expected_accuracy_T)/sum(confusionGBM)
+observed_accuracy = (confusionGBM[1,1]+confusionGBM[2,2])/sum(confusionGBM)
+
+kappaGBM  = (observed_accuracy- expected_accuracy)/(1-expected_accuracy)
 
 
 
@@ -56,7 +77,6 @@ test_set$gampreds<-predict.gam(gamout, test_set, type="response")
 test_set$gamprobs<-exp(test_set$gampreds)/(1+exp(test_set$gampreds))
 summary(test_set$gamprobs)
 table(observed=test_set$outcome_variable, predicted=test_set$gamprobs>0.5866)
-
 
 
 
